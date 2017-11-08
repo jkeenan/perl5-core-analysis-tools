@@ -104,14 +104,22 @@ my $bad_distros = qr/(
         | POE-Component-Child # test hangs indefinitely
     )/ix;
 
+my %modules4distros = (
+    'libwww-perl'   => 'LWP',
+);
 my @distros = ();
 while ( my $row = $csv->getline_hr($IN) ) {
     next if $row->{core_upstream_status};
     next if $row->{distribution} eq 'perl';
     next if $row->{distribution} =~ m/$bad_distros/;
     next unless $row->{count};
-    my $module = $row->{distribution};
-    $module =~ s/-/::/g;
+    my $module;
+    if ($modules4distros{$row->{distribution}}) {
+        $module = $modules4distros{$row->{distribution}};
+    }
+    else {
+        $module = $row->{distribution} =~ s/-/::/gr;
+    }
     push @distros, [ $row->{distribution}, $row->{count}, $module ];
 }
 close $IN or croak "Unable to close '$inputfile' after reading";
