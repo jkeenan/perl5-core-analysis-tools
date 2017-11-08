@@ -1,0 +1,4 @@
+This directory, 'cpan-river/', holds programs and documentation which use the
+concept of the "CPAN river" to perform quality analysis on the Perl 5 core
+distribution.
+
