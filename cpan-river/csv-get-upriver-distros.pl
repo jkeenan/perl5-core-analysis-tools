@@ -105,8 +105,32 @@ my $bad_distros = qr/(
     )/ix;
 
 my %modules4distros = (
+    # hyphen        => 'double colon'
     'libwww-perl'   => 'LWP',
+    'TimeDate'      => 'Date::Format',
+    'IO-stringy'   => 'IO::Stringy',
+    'TermReadKey'   => 'Term::ReadKey',
+    'Role-Identifiable' => 'Role::Identifiable::HasTags',
+    'MIME-tools'    => 'MIME::Tools',
+    'Snowball-Norwegian'    => 'Lingua::Stem::Snowball::No',
+    'Snowball-Swedish'    => 'Lingua::Stem::Snowball::Se',
+    'libintl-perl'  => 'Locale::Util',
+    'perl-ldap'     => 'Net::LDAP',
+    'PerlMagick'    => 'Image::Magick',
+    'libxml-perl'  => 'XML::Perl2SAX',
+    'HTML-Element-Extended' => 'HTML::ElementRaw',
+    'GDTextUtil'    => 'GD::Text::Align',
+    'GDGraph'       => 'GD::Graph',
+    'libapreq2'     => 'APR::Request',
+    'app'           => 'App::Ack',
+    'libapreq'      => 'Apache::libapreq',
+    'Gearman'       => 'Gearman::XS',
+    'perfSONAR_PS-Base' => 'perfSONAR_PS::XML::Base',
+    'Dist-Zilla-Plugins-CJM'    => 'Dist::Zilla::Plugin::GitVersionCheckCJM',
+    'cpan-outdated' => 'App::cpanoutdated',
+    'NTLM'          => 'Authen::NTLM',
 );
+
 my @distros = ();
 while ( my $row = $csv->getline_hr($IN) ) {
     next if $row->{core_upstream_status};
