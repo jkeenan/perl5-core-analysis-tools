@@ -5,28 +5,34 @@ use Data::Dump qw( dd pp );
 use Carp;
 use Text::CSV;
 use Getopt::Long;
+use Cwd;
 
-my @lt = localtime(time);
-my $YYYYMMDD = sprintf("%04d%02d%02d" => (
-    $lt[5] + 1900,
-    $lt[4] + 1,
-    $lt[3]
-) );
-
-my ($target_count, $inputfile, $outputfile, $verbose) = ('') x 4;
+my ($target_count, $inputfile, $outputdir, $outputfile, $verbose) = ('') x 4;
 GetOptions(
     "count=i"       => \$target_count,
     "input=s"       => \$inputfile,
+    "outputdir=s"   => \$outputdir,
     "output=s"      => \$outputfile,
     "verbose"       => \$verbose,
 ) or die("Error in command line arguments: $!");
 
 $target_count ||= 1000;
 $inputfile ||= 'cpan.river.csv';
-$outputfile ||= "${YYYYMMDD}-top-${target_count}.txt";
+$outputdir ||= cwd();
 
-#say join('|' => $target_count, $inputfile, $outputfile)
-#    if $verbose;
+# Retain an 8-digit datestamp from input, if provided
+my ($YYYYMMDD) = $inputfile =~ m/(\d{8})/;
+unless ($YYYYMMDD) {
+    my @lt = localtime(time);
+    $YYYYMMDD = sprintf("%04d%02d%02d" => (
+        $lt[5] + 1900,
+        $lt[4] + 1,
+        $lt[3]
+    ) );
+}
+
+$outputfile ||= "$outputdir/${YYYYMMDD}-top-${target_count}.txt";
+
 if ($verbose) {
     say "Input:   $inputfile";
     say "Output:  $outputfile";
