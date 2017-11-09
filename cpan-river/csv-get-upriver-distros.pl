@@ -102,6 +102,7 @@ my $bad_distros = qr/(
         | Test-WWW-Simple     # mojolicious server fails to close
         | App-SimpleScan      # depends on Test-WWW-Simple
         | POE-Component-Child # test hangs indefinitely
+        | NetHack-Item        # gives Out of memory (perl RT 132152)
     )/ix;
 
 my %modules4distros = (
