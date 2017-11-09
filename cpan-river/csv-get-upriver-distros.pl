@@ -129,6 +129,7 @@ my %modules4distros = (
     'Dist-Zilla-Plugins-CJM'    => 'Dist::Zilla::Plugin::GitVersionCheckCJM',
     'cpan-outdated' => 'App::cpanoutdated',
     'NTLM'          => 'Authen::NTLM',
+    'BioPerl'       => 'Bio::Tools::Run::Analysis', # guessing
 );
 
 my @distros = ();
