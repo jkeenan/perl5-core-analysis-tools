@@ -47,6 +47,7 @@ my $finputfile = "$inputdir/$inputfile";
 croak "Could not locate input file $finputfile" unless (-f $finputfile);
 $outputdir ||= $inputdir;
 croak "Could not locate output directory $outputdir" unless (-d $outputdir);
+my $foutputfile = "$outputdir/$outputfile";
 
 if ($verbose) {
     say "Input directory:   $inputdir";
@@ -84,14 +85,74 @@ while (my $l = <$IN>) {
     elsif ($l =~ m/^Installing (.*?)\s+failed\./) {
         push @{$rationales{install}}, $1;
     }
-    elsif (my (@multiple) = $l =~ m/^Installing the dependencies failed:\sModule\s'([^']+?)'\sis\snot\sinstalled(?:,\sModule\s'([^']+?)'\sis\snot\sinstalled)*/) {
-        pp(\@multiple);
-        push @{$rationales{dependencies}}, grep { defined $_ } @multiple;
+    elsif (my (@multiples) = $l =~ m/^Installing the dependencies failed:\sModule\s'([^']+?)'\sis\snot\sinstalled(?:,\sModule\s'([^']+?)'\sis\snot\sinstalled)*/) {
+        $rationales{dependencies}{$_}++ for grep { defined } @multiples;
     }
     #    Installing the dependencies failed: Module 'AnyEvent::CacheDNS' is not installed, Module 'AnyEvent' is not installed, Module 'AnyEvent::HTTP' is not installed
 }
 close $IN or croak "Unable to close $intermed after reading";
-#pp(\%rationales);
-pp($rationales{dependencies});
+
+prepare_report($finputfile, $intermed, $foutputfile, \%rationales);
+
+sub prepare_report {
+    my ($finputfile, $intermed, $foutputfile, $rationales) = @_;
+open my $OUT, '>', $foutputfile or croak "Could not open $foutputfile for writing";
+my $hd = <<EOF;
+CPAN River Tested Against Blead
+
+Input file:     $finputfile
+Raw FAILs:      $intermed
+
+cpanm bailed out of the installation for the following distributions:
+
+EOF
+for my $b (@{$rationales->{bailing}}) {
+  $hd .= "  $b\n";
+}
+$hd .= <<EOF;
+
+The following distributions failed during their respective configuration stages:
+
+EOF
+for my $b (@{$rationales->{configure}}) {
+  $hd .= "  $b\n";
+}
+$hd .= <<EOF;
+
+The following distributions failed during their build, test or install stages:
+
+EOF
+for my $b (@{$rationales->{install}}) {
+  $hd .= "  $b\n";
+}
+$hd .= <<EOF;
+
+The following distributions failed, causing failures in dependent distributions
+in the amounts listed:
+
+EOF
+for my $b (sort keys %{$rationales->{dependencies}}) {
+    $hd .= sprintf("  %-36s=> %3s\n" => $b, $rationales->{dependencies}{$b});
+}
+$hd .= <<EOF;
+
+The following distributions could not be found:
+
+EOF
+for my $b (@{$rationales->{nofind}}) {
+  $hd .= "  $b\n";
+}
+$hd .= <<EOF;
+
+The following distributions could not be fetched:
+
+EOF
+for my $b (@{$rationales->{nofetch}}) {
+  $hd .= "  $b\n";
+}
+
+say $OUT $hd;
+close $OUT or croak "Could not close $foutputfile after writing";
+}
 
 say "Finished!" if $verbose;
